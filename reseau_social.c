@@ -2,16 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* ============================================================
- *  reseau_social.c
+/*  reseau_social.c
  *  Linked-list social network in C
- *  Structures: post_t (inner list) + user_t (outer list)
- * ============================================================ */
+ *  Structures: post_t (inner list) + user_t (outer list) */
 
 #define ID_MIN  1000
 #define ID_MAX  9999
 
-/* ── Data structures ─────────────────────────────────────── */
+/* Data structures */
 
 typedef struct post {
     int   id_post;
@@ -30,7 +28,7 @@ typedef struct user {
 
 typedef user_t* reseau_t;
 
-/* ── Forward declarations ────────────────────────────────── */
+/* Forward declarations */
 
 reseau_t insere_user(reseau_t R, int id, char *nom, int age);
 post_t*  insere_post(post_t *L, int id, char *contenu, int likes);
@@ -42,33 +40,33 @@ reseau_t supprimer_user(reseau_t R, int id);
 void     liberer_posts(post_t *L);
 void     liberer_reseau(reseau_t R);
 
-/* ── Q1: saisie_post — fill ONE post via pointer ─────────── */
+/* fill ONE post via pointer */
 
 void saisie_post(post_t *P) {
     do {
         printf("  ID post (4 chiffres): ");
-        scanf("%d", &P->id_post);          /* & for int */
+        scanf("%d", &P->id_post);
     } while (P->id_post < ID_MIN || P->id_post > ID_MAX);
 
     printf("  Contenu: ");
-    scanf(" %[^\n]", P->contenu);          /* reads full line with spaces */
+    scanf(" %[^\n]", P->contenu);
 
     do {
         printf("  Likes (>= 0): ");
-        scanf("%d", &P->likes);            /* & for int */
+        scanf("%d", &P->likes);
     } while (P->likes < 0);
 
-    P->svt = NULL;                         /* always initialise svt */
+    P->svt = NULL;
 }
 
-/* ── Q2: affiche_post — display ONE post by value ─────────── */
+/* display ONE post by value */
 
-void affiche_post(post_t P) {             /* value → dot */
+void affiche_post(post_t P) {
     printf("    [%d] \"%s\"  likes: %d\n",
            P.id_post, P.contenu, P.likes);
 }
 
-/* ── Q3: saisie_user — fill ONE user via pointer ─────────── */
+/* fill ONE user via pointer */
 
 void saisie_user(user_t *U) {
     do {
@@ -77,7 +75,7 @@ void saisie_user(user_t *U) {
     } while (U->id_user < ID_MIN || U->id_user > ID_MAX);
 
     printf("Nom: ");
-    scanf("%s", U->nom);                   /* no & for strings */
+    scanf("%s", U->nom);
 
     do {
         printf("Age: ");
@@ -102,31 +100,31 @@ void saisie_user(user_t *U) {
     }
 }
 
-/* ── Q4: affiche_user — display ONE user (posts included) ── */
+/* display ONE user (posts included) */
 
-void affiche_user(user_t U) {             /* value → dot */
+void affiche_user(user_t U) {
     printf("User [%d] %s  age: %d\n",
            U.id_user, U.nom, U.age);
     post_t *cour = U.l_posts;
-    while (cour != NULL) {                /* cour != NULL, NOT cour->svt */
-        affiche_post(*cour);              /* dereference pointer */
+    while (cour != NULL) {
+        affiche_post(*cour);
         cour = cour->svt;
     }
 }
 
-/* ── Q5: affiche_reseau — display every user ─────────────── */
+/* display every user */
 
 void affiche_reseau(reseau_t R) {
     reseau_t cour = R;
-    printf("\n========== Reseau Social ==========\n");
+    printf("\n=== Reseau Social ===\n");
     while (cour != NULL) {
         affiche_user(*cour);
-        printf("-----------------------------------\n");
+        printf("\n");
         cour = cour->svt;
     }
 }
 
-/* ── Q6: insere_post — sorted insert by id_post ─────────── */
+/* sorted insert by id_post */
 
 post_t* insere_post(post_t *L, int id, char *contenu, int likes) {
     /* check duplicate */
@@ -136,14 +134,14 @@ post_t* insere_post(post_t *L, int id, char *contenu, int likes) {
             printf("Erreur: post ID %d existe deja.\n", id);
             return L;
         }
-        cour = cour->svt;                 /* advance every iteration */
+        cour = cour->svt;
     }
 
     /* create node */
     post_t *nouv = (post_t*)malloc(sizeof(post_t));
     if (!nouv) { fprintf(stderr, "Erreur malloc\n"); exit(1); }
     nouv->id_post = id;
-    strcpy(nouv->contenu, contenu);       /* strcpy for strings, never = */
+    strcpy(nouv->contenu, contenu);
     nouv->likes = likes;
     nouv->svt   = NULL;
 
@@ -162,7 +160,7 @@ post_t* insere_post(post_t *L, int id, char *contenu, int likes) {
     return L;
 }
 
-/* ── Q7: insere_user — sorted insert by id_user ─────────── */
+/* sorted insert by id_user */
 
 reseau_t insere_user(reseau_t R, int id, char *nom, int age) {
     /* check duplicate */
@@ -197,19 +195,19 @@ reseau_t insere_user(reseau_t R, int id, char *nom, int age) {
     return R;
 }
 
-/* ── Q8: recursive — total likes across all users/posts ─── */
+/* total likes across all users/posts */
 
-int total_likes_posts(post_t *L) {        /* base case first */
+int total_likes_posts(post_t *L) {
     if (L == NULL) return 0;
     return L->likes + total_likes_posts(L->svt);
 }
 
-int total_likes(reseau_t R) {             /* base case first */
+int total_likes(reseau_t R) {
     if (R == NULL) return 0;
     return total_likes_posts(R->l_posts) + total_likes(R->svt);
 }
 
-/* ── Q9: recursive count of all users ───────────────────── */
+/* recursive count of all users */
 
 int nb_users(reseau_t R) {
     if (R == NULL) return 0;
@@ -222,12 +220,12 @@ float moyenne_likes(reseau_t R) {
     return (float)total_likes(R) / n;
 }
 
-/* ── Q10: supprimer_user — remove by id ─────────────────── */
+/* remove by id */
 
 reseau_t supprimer_user(reseau_t R, int id) {
     if (R == NULL) return NULL;
 
-    if (R->id_user == id) {               /* head matches */
+    if (R->id_user == id) {
         reseau_t temp = R->svt;
         liberer_posts(R->l_posts);
         free(R);
@@ -249,7 +247,7 @@ reseau_t supprimer_user(reseau_t R, int id) {
     return R;
 }
 
-/* ── Memory cleanup ─────────────────────────────────────── */
+/* Memory cleanup */
 
 void liberer_posts(post_t *L) {
     while (L != NULL) {
@@ -268,7 +266,7 @@ void liberer_reseau(reseau_t R) {
     }
 }
 
-/* ── main ────────────────────────────────────────────────── */
+/* main */
 
 int main(void) {
     reseau_t R = NULL;
@@ -277,7 +275,7 @@ int main(void) {
     printf("=== Reseau Social — Saisie ===\n");
     do {
         user_t temp;
-        saisie_user(&temp);                /* fill one user */
+        saisie_user(&temp);
         R = insere_user(R, temp.id_user, temp.nom, temp.age);
 
         /* copy posts into the newly inserted node */
